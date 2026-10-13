@@ -188,7 +188,7 @@ function exportPNG(){
    lastBlob=bl;lastName=`Jackup_${cur().n.replace(/[^\w가-힣]+/g,'_')}_${S.g.hull||'result'}_${S.g.date}.png`;
    const ov=document.createElement('div');ov.id='ov';
    ov.style.cssText='position:fixed;inset:0;background:#000d;z-index:20;overflow:auto;padding:12px';
-   ov.innerHTML=`<img src="${URL.createObjectURL(bl)}" style="width:100%;max-width:560px;display:block;margin:0 auto;background:#fff;border-radius:6px"><div class="btns" style="max-width:560px;margin:10px auto"><button class="pri" data-a="savepng">이미지 저장</button><button data-a="closeov">닫기</button></div><p class="hint" style="text-align:center;color:#cbd5df">저장이 안 되면 이미지를 길게 눌러 저장하세요.</p>`;
+   ov.innerHTML=`<img src="${URL.createObjectURL(bl)}" style="width:100%;max-width:560px;display:block;margin:0 auto;background:#fff;border-radius:6px"><div class="btns" style="max-width:560px;margin:10px auto"><button class="pri" data-a="savepng">이미지 저장</button><button data-a="sharepng">공유</button><button data-a="closeov">닫기</button></div><p class="hint" style="text-align:center;color:#cbd5df">저장하면 기기의 다운로드 폴더에 PNG로 저장돼요. 안 되면 이미지를 길게 눌러 저장하세요.</p>`;
    document.body.appendChild(ov);
   },'image/png');
  };
@@ -273,9 +273,13 @@ document.addEventListener('click',e=>{
  else if(t.dataset.a=='png')exportPNG();
  else if(t.dataset.a=='closeov'){const o=$('#ov');if(o)o.remove()}
  else if(t.dataset.a=='savepng'){
+  const a=document.createElement('a');a.href=URL.createObjectURL(lastBlob);a.download=lastName;document.body.appendChild(a);a.click();a.remove();
+  const o=t.textContent;t.textContent='저장했어요 ✓';setTimeout(()=>t.textContent=o,2000);
+ }
+ else if(t.dataset.a=='sharepng'){
   const fl=new File([lastBlob],lastName,{type:'image/png'});
   if(navigator.canShare&&navigator.canShare({files:[fl]}))navigator.share({files:[fl]}).catch(()=>{});
-  else{const a=document.createElement('a');a.href=URL.createObjectURL(lastBlob);a.download=lastName;document.body.appendChild(a);a.click();a.remove()}
+  else alert('이 기기에서는 공유 기능을 지원하지 않아요');
  }
  else if(t.dataset.a=='copy'){
   const r=calc(b),s=`[${b.n}] Hull ${S.g.hull} / ${S.g.date}\n실제 하중 ${f(r.act)} ton (${status(b,r)[0]})\n허용 ${f(b.lo)} ~ ${f(b.hi)} ton, 목표 ${f(b.tgt)} ton\nPup ${f(r.pu,1)} / Pdown ${f(r.pd,1)}, Factor ${b.f}, Ram ${b.ram}`;
