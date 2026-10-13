@@ -198,7 +198,7 @@ function exportPNG(){
 function sync(){document.querySelectorAll('input[data-k]').forEach(i=>{if(i!==document.activeElement)i.value=path(cur(),i.dataset.k)??''})}
 function render(){
  const b=cur();initHandles(b);
- $('#hd').innerHTML=[['hull','Hull No'],['date','Date'],['temp','Temp'],['draft','Draft']].map(([k,p])=>`<input data-g="${k}" placeholder="${p}" value="${S.g[k]||''}" ${k=='date'?'type="date"':''}>`).join('');
+ $('#hd').innerHTML=[['hull','Hull No'],['date','Date'],['temp','Temp (℃)'],['draft','Draft (m)']].map(([k,p])=>`<input data-g="${k}" placeholder="${p}" value="${S.g[k]||''}" ${k=='date'?'type="date"':k=='temp'?'data-unit="℃" inputmode="decimal"':k=='draft'?'data-unit=" m" inputmode="decimal"':''}>`).join('');
  $('#tabs').innerHTML=Object.entries(S.b).map(([k,v])=>`<button class="${k==S.cur?'on':''}" data-tab="${k}">${v.n}</button>`).join('');
  const hv=(key,t)=>`<div class="sub" style="font-size:13px;font-weight:600;margin:10px 0 4px">${t}</div><div class="g2"><label>Point 1 압력${I(key+'.0.0')}</label><label>Point 1 값${I(key+'.0.1')}</label><label>Point 2 압력${I(key+'.1.0')}</label><label>Point 2 값${I(key+'.1.1')}</label></div>`;
  $('#main').innerHTML=`<div class="card" id="res"></div>
@@ -242,9 +242,15 @@ function bindDrag(){
   e.preventDefault();
  });
 }
+function fmtUnit(raw,u){const v=raw.split(u).join('').replace(',','.'),m=(v.match(/-?\d*\.?\d*/)||[''])[0];return{nv:/\d/.test(m)?m+u:(m==='-'||m==='.'?m:''),n:m.length}}
+document.addEventListener('focusin',e=>{const t=e.target,u=t.dataset&&t.dataset.unit;if(u)setTimeout(()=>{try{const n=fmtUnit(t.value,u).n;t.setSelectionRange(n,n)}catch(x){}},0)});
 document.addEventListener('input',e=>{
  const t=e.target,b=cur();
- if(t.dataset.g)S.g[t.dataset.g]=t.value;
+ if(t.dataset.g){
+  const u=t.dataset.unit;
+  if(u){const r=fmtUnit(t.value,u);if(t.value!==r.nv){t.value=r.nv;try{t.setSelectionRange(r.n,r.n)}catch(e){}}}
+  S.g[t.dataset.g]=t.value;
+ }
  else if(t.dataset.s)b[t.dataset.s]=t.value;
  else if(t.dataset.k){
   const v=t.value.trim()===''?null:parseFloat(t.value.replace(',','.'));
